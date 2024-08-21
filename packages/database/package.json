@@ -1,0 +1,31 @@
+{
+  "name": "@repo/database",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push --skip-generate",
+    "db:init": "docker compose up -d",
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "prisma": "^5.18.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "typescript": "latest"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  }
+}
