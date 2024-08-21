@@ -1,81 +1,55 @@
-# Turborepo starter
 
-This is an official starter Turborepo.
+# Wallet Buddy
 
-## Using this example
+Wallet Buddy is a Telegram bot based wallet. Its a telegram bot rather a super bot that does almost everything that your Dapps and Wallets do with the same rather more security.
 
-Run the following command:
+## Idea
 
-```sh
-npx create-turbo@latest
-```
+Idea is to create a super bot for web3 which users can use to do all activity regarding Web3.
 
-## What's inside?
+## Setup
 
-This Turborepo includes the following packages/apps:
+For setup [go here](./setup.md)
 
-### Apps and Packages
+## Previos versions
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- [Bot version 1](https://github.com/sanketnighot/solanabuddybot)
+- [Bot v2 initial individual repo](https://github.com/sanketnighot/solanabuddybot_v2)
+- [Webapp initial individual repo](https://github.com/sanketnighot/solanabuddybot_webapp)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+> Note: I started working on this project from 1st August, 2024. The initial v1 was ready within 4-5 days. Then I started working on v2. Bot v2 and Webapp are part of v2. This repos is a monorepo created using turbo which contains all code of Bot v2 and Webapp also created seperate package for Prisma and then all the changes will be made in this repo itself.
 
-### Utilities
+## Authors
 
-This Turborepo has some additional tools already setup for you:
+- [@sankettnighot](https://www.github.com/sanketnighot)
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Demo
 
-### Build
+Check this telegram bot for demo [@solanabuddy_bot](https://t.me/solanabuddy_bot)
 
-To build all apps and packages, run the following command:
+## Features
 
-```
-cd my-turborepo
-pnpm build
-```
+### Features of v1
 
-### Develop
+- Create Solana Account (KeyPair)
+- Transfer Sol
+- Airdrop for Devnet
+- Create SPL Token
+- Transfer SPL Token
+- Get Token that user holds
+- Whale transaction alerts
+- User account transaction alerts.
+- Mini Games
 
-To develop all apps and packages, run the following command:
+### Features of v2
 
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+- [x]  Create/Import Wallets(Seed Phrase)
+- [x]  SOL Transaction (Transfer/Receive)
+- [x]  Manage SPL Tokens (Create/Transfer/Receive)
+- [x]  Whale Alerts
+- [x]  Transaction Alerts (User Addresses)
+- [x]  Airdrop (Devnet)
+- [ ]  Web3 News
+- [ ]  Mini Games
+- [ ]  NFT Library
+- [ ]  Learn Web3
