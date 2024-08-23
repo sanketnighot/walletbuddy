@@ -1,28 +1,61 @@
 "use client"
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import useStorage from "@/hooks/useStorage"
+import Loader from "@/Components/Loader"
+import WelcomeScreen from "@/Components/WelcomeScreen"
 
 const App = () => {
+  const router = useRouter()
+  const { value: passwordStorage, isLoading: isPasswordStorageLoading } =
+    useStorage("password")
+  const { value: accountsStorage, isLoading: isAccountsStorageLoading } =
+    useStorage("accounts")
 
-  const router = useRouter();
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    window.Telegram!.WebApp.BackButton.hide();
-  }, []);
+    window.Telegram!.WebApp.BackButton.hide()
+
+    if (!isPasswordStorageLoading) {
+      if (!passwordStorage) {
+        router.push("/setNewPassword")
+      }
+      setIsInitialized(true)
+    }
+    if (!isAccountsStorageLoading) {
+      if (accountsStorage) {
+        router.push("/accounts")
+      }
+    }
+  }, [
+    isPasswordStorageLoading,
+    passwordStorage,
+    router,
+    isAccountsStorageLoading,
+    accountsStorage,
+  ])
+
+  if (!isInitialized || isAccountsStorageLoading) {
+    return (
+      <div className="w-full h-dvh flex items-center justify-center">
+        <Loader />
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-center gap-2 bg-tg-bg p-2">
-      <h1 className="text-4xl font-bold mb-4 text-tg-text">Welcome to the Wallet Buddy</h1>
-      <Link href="/setNewPassword">
-        <button className="w-56 bg-tg-button text-tg-button-text px-4 py-2 rounded-md">Set New Password</button>
-      </Link>
-      <Link href="/onboarding">
-        <button className="w-56 bg-tg-button text-tg-button-text px-4 py-2 rounded-md">Onboarding Page</button>
-      </Link>
-    </div>
-  );
-};
+    <div className={`min-h-screen flex flex-col justify-center`}>
+      {isInitialized && passwordStorage && <WelcomeScreen />}
 
-export default App;
+      {!isInitialized && (
+        <div className="w-full h-full flex items-center justify-center">
+          <Loader />
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default App
