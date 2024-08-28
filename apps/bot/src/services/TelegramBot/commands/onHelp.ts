@@ -9,7 +9,7 @@ export default async function onHelp(msg: Message) {
   try {
     const userInfo = await getUser(BigInt(msg.from?.id || 0))
     let keyboard
-    if (userInfo.data?.SolWallets.length === 0 || userInfo.success === false) {
+    if (userInfo.data?.walletInfo === null || userInfo.success === false) {
       keyboard = mainMenuWithoutWallets
     } else {
       keyboard = mainMenuWithWallets

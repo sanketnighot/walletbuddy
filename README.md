@@ -21,7 +21,7 @@ For setup [go here](./setup.md)
 
 ## Authors
 
-- [@sankettnighot](https://www.github.com/sanketnighot)
+- [@sanketnighot](https://www.github.com/sanketnighot)
 
 ## Demo
 
@@ -53,3 +53,5 @@ Check this telegram bot for demo [@solanabuddy_bot](https://t.me/solanabuddy_bot
 - [ ]  Mini Games
 - [ ]  NFT Library
 - [ ]  Learn Web3
+- [ ]  Connect dapps to wallet
+- [ ]  Sign transactions sent by dapps

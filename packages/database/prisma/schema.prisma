@@ -14,35 +14,18 @@ datasource db {
 }
 
 model User {
-  // TODO: Need to handle subscription logic for users.
-  id              String         @id @default(cuid())
-  chatId          BigInt         @unique
-  username        String?
-  firstName       String?
-  lastName        String?
-  password        String?
-  subscriptions   Subscription[]
-  SolWallets      SolWallet[]    @relation("UserWallets")
-  defaultWallet   SolWallet?     @relation("DefaultWallet", fields: [defaultWalletId], references: [id])
-  defaultWalletId String?        @unique
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            String          @id @default(cuid())
+  chatId        BigInt          @unique
+  username      String?
+  subscriptions Subscription[]
+  WalletSession WalletSession[]
+  encSeed       String?
+  walletInfo    Json[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([chatId])
-}
-
-model SolWallet {
-  id         String   @id @default(cuid())
-  publicKey  String
-  privateKey String
-  user       User     @relation("UserWallets", fields: [userId], references: [id])
-  userId     String
-  defaultFor User?    @relation("DefaultWallet")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([publicKey, userId])
-  @@index([publicKey])
+  @@index([username])
 }
 
 model Subscription {
@@ -56,4 +39,28 @@ model Subscription {
   updatedAt   DateTime @updatedAt
 
   @@index([name])
+}
+
+model WalletSession {
+  id        String              @id @default(cuid())
+  user      User                @relation(fields: [userId], references: [id])
+  type      WalletSessionType
+  dapp      String
+  data      Json?
+  status    WalletSessionStatus
+  expiresAt DateTime
+  userId    String
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+enum WalletSessionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum WalletSessionType {
+  CONNECTION_REQUEST
+  TRANSACTION_REQUEST
 }
