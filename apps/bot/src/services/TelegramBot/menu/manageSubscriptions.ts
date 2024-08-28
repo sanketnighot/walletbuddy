@@ -111,6 +111,7 @@ export const handleSubscription = async (query: CallbackQuery) => {
           )
         } else if (query_status === "c") {
           await handleSubscribeForUser(BigInt(query.from.id), query_info)
+          SendBotResponse(query.from.id, "Subscribed successfully")
         }
         break
       }
@@ -132,6 +133,7 @@ export const handleSubscription = async (query: CallbackQuery) => {
           )
         } else if (query_status === "c") {
           await handleUnsubscribeForUser(BigInt(query.from.id), query_info)
+          SendBotResponse(query.from.id, "Unsubscribed successfully")
         }
         break
       }

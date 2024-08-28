@@ -11,22 +11,22 @@ interface Transaction {
 const dummyTransactions: Transaction[] = [
   {
     id: "1",
-    from: "0x123...",
-    to: "0x456...",
+    from: "de25rs...",
+    to: "cwe3d...",
     amount: "0.5 SOL",
     timestamp: 1647234567000,
   },
   {
     id: "2",
-    from: "0x789...",
-    to: "0xabc...",
+    from: "wer32...",
+    to: "de25rs...",
     amount: "1.2 SOL",
     timestamp: 1647320967000,
   },
   {
     id: "3",
-    from: "0xdef...",
-    to: "0x123...",
+    from: "rwfw3...",
+    to: "de25rs...",
     amount: "0.3 SOL",
     timestamp: 1647407367000,
   },
@@ -34,12 +34,12 @@ const dummyTransactions: Transaction[] = [
 
 const Activity: React.FC = () => {
   return (
-    <div className="p-4 bg-tg-section-bg">
+    <div className="p-4">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {dummyTransactions.map((tx) => (
           <div
             key={tx.id}
-            className=" bg-tg-secondary-bg rounded-lg shadow-md p-4"
+            className="bg-tg-secondary-bg rounded-lg shadow-md p-4"
           >
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-600">

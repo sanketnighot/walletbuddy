@@ -13,6 +13,9 @@ import {
   generateMnemonicForUser,
   generateSeed,
 } from "@/utils/walletActions"
+import axios from "axios"
+import { Network, Wallet } from "@/types/wallet"
+import useUserData from "@/hooks/useUserData"
 
 const CreateWallet = () => {
   const [mnemonic, setMnemonic] = useState<string[]>([])
@@ -20,18 +23,24 @@ const CreateWallet = () => {
   const [error, setError] = useState<string>("")
   const [copied, setCopied] = useState(false)
   const { setValue: setSeedValue, error: seedError } = useStorage("seed")
-  const { setValue: setAccounts, error: accountsError } = useStorage("accounts")
-  const { setValue: setNetworks, error: networksError } = useStorage("networks")
+  const { userData, loading, error: userDataError } = useUserData()
   const router = useRouter()
 
   useBackButton()
 
   useEffect(() => {
+    if (userDataError) {
+      console.log("Error fetching user data: ", userDataError)
+      return setError("Error fetching user data")
+    }
+  }, [userData, userDataError, isLoading])
+
+  useEffect(() => {
     setIsLoading(true)
     const fetchWalletData = async () => {
       const userMnemonic = await generateMnemonicForUser()
-      if (userMnemonic.success && userMnemonic.mnemonic) {
-        setMnemonic(userMnemonic.mnemonic.split(" "))
+      if (userMnemonic.success === true) {
+        setMnemonic(userMnemonic.data.split(" "))
       } else {
         setError("Error generating mnemonic")
       }
@@ -42,26 +51,26 @@ const CreateWallet = () => {
 
   const handleSubmit = async () => {
     const mnemonicSeed = await generateSeed(mnemonic.join(" "))
-    if (!mnemonicSeed || !mnemonicSeed.success || !mnemonicSeed.seed) {
+    if (!mnemonicSeed || !mnemonicSeed.success || !mnemonicSeed.data) {
       console.log("Error generating account: ", mnemonicSeed.message)
       return setError("Error generating account")
     }
-    const keypair = await generateKeypair(mnemonicSeed.seed, "solana", 0)
-    if (!keypair || !keypair.success || !keypair.keypair) {
+    const keypair = await generateKeypair(mnemonicSeed.data, "solana", 0)
+    if (!keypair || !keypair.success || !keypair.data) {
       console.log("Error generating keypair: ", keypair.message)
       return setError("Error generating keypair")
     }
-    const solanaKeys = await createSolanaKeys(keypair.keypair)
+    const solanaKeys = await createSolanaKeys(keypair.data)
     if (
       !solanaKeys ||
       !solanaKeys.success ||
-      !solanaKeys.publicKey ||
-      !solanaKeys.secretKey
+      !solanaKeys.data.publicKey ||
+      !solanaKeys.data.secretKey
     ) {
       console.log("Error creating solana keys: ", solanaKeys.message)
       return setError("Error creating solana keys")
     }
-    const encryptSecretKey = await encryptData(solanaKeys.secretKey)
+    const encryptSecretKey = await encryptData(solanaKeys.data.secretKey)
     if (
       !encryptSecretKey ||
       !encryptSecretKey.success ||
@@ -70,26 +79,50 @@ const CreateWallet = () => {
       console.log("Error encrypting secret key: ", encryptSecretKey.message)
       return setError("Error encrypting secret key")
     }
-    const accounts = [
-      {
-        name: "Account 1",
-        publicKey: solanaKeys.publicKey,
-        secretKey: encryptSecretKey.encryptedData,
-      },
-    ]
-    const networks = [
-      {
-        name: "Solana Devnet",
-        rpc: "https://api.devnet.solana.com",
-        explorer: "https://solscan.io",
-        chainId: "devnet",
-        type: "solana",
-      },
-    ]
+
+    const encryptedSeed = await encryptData(mnemonicSeed.data.toString())
+    if (
+      !encryptedSeed ||
+      !encryptedSeed.success ||
+      !encryptedSeed.encryptedData
+    ) {
+      console.log("Error encrypting seed: ", encryptedSeed.message)
+      return setError("Error encrypting seed")
+    }
+    const account: Wallet = {
+      name: "Account 1",
+      publicKey: solanaKeys.data.publicKey,
+      encPrivateKey: encryptSecretKey.encryptedData,
+      network: "solana",
+    }
+    const networks: Network = {
+      name: "Solana Devnet",
+      rpc: "https://api.devnet.solana.com",
+      explorer: "https://solscan.io",
+      chainId: "devnet",
+      currency: "SOL",
+      decimals: 9,
+    }
+
     setSeedValue(encryptSecretKey.encryptedData)
-    setAccounts(JSON.stringify(accounts))
-    setNetworks(JSON.stringify(networks))
-    alert("Wallet created successfully")
+    const walletInfo = {
+      userId: userData.id,
+      encDerSeed: encryptedSeed.encryptedData,
+      wallet: account,
+    }
+    const response = await axios.post(
+      "https://webhook.therapix.in/api/v1/wallet/create",
+      walletInfo
+    )
+    console.log("response", response)
+    if (response.status === 200) {
+      alert("Wallet created successfully")
+      router.push("accounts?tab=${tab}")
+      return
+    } else {
+      console.log("Error creating wallet: ", response.data.message)
+      setError("Error creating wallet")
+    }
     router.push("/")
   }
 
@@ -97,7 +130,7 @@ const CreateWallet = () => {
     if (copied) {
       setTimeout(() => {
         setCopied(false)
-      }, 3000)
+      }, 1000)
     }
   }, [copied])
   return (
@@ -139,14 +172,6 @@ const CreateWallet = () => {
             {" "}
             I have saved my seed phrase
           </button>
-
-          {accountsError && (
-            <p className="text-tg-text mt-2">${accountsError}</p>
-          )}
-          {seedError && <p className="text-tg-text mt-2">${seedError}</p>}
-          {networksError && (
-            <p className="text-tg-text mt-2">${networksError}</p>
-          )}
         </section>
       </section>
     </main>

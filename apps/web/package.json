@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.3",
+    "axios": "^1.7.5",
     "bcrypt": "^5.1.1",
     "bip39": "^3.1.0",
     "bs58": "^6.0.0",

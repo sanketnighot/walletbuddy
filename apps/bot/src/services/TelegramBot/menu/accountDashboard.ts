@@ -16,34 +16,20 @@ export const sendAccountDashboard = async (msg: Message) => {
     let dashboardMessage = await getAccountDashboardMessage(
       user.data?.username || "User"
     )
-    const defaultSolWallet = user.data?.SolWallets.filter(
-      (wallet) => wallet.id === user.data?.defaultWalletId
-    )
+    const defaultSolWallet = (user.data?.walletInfo as { defaultWallet?: any })?.defaultWallet
 
     const defaultSolWalletBalance = await getBalance(
-      // @ts-expect-error it will be fixed
-      defaultSolWallet[0].publicKey
+      defaultSolWallet
     )
     if ((defaultSolWallet?.length ?? 0) > 0) {
-      // @ts-expect-error it will be fixed
-      dashboardMessage += `💳 <b><u>Default Wallet</u></b>: <code>${defaultSolWallet[0].publicKey}</code>\n`
+      dashboardMessage += `💳 <b><u>Default Wallet</u></b>: <code>${defaultSolWallet}</code>\n`
       dashboardMessage += `💰 <b><u>Balance</u></b>: ${defaultSolWalletBalance} SOL`
     }
-    if ((user.data?.SolWallets?.length ?? 0) > 1) {
-      dashboardMessage += `\n\n<b><u>📂 Other Wallets:</u></b>\n`
-      user.data?.SolWallets.forEach((wallet) => {
-        if (wallet.id !== user.data?.defaultWalletId) {
-          dashboardMessage += `→ <code>${wallet.publicKey}</code>\n`
-        }
-      })
-    }
-
     const inlineKeyboard = [
       [
         {
           text: "🔗 Open Solscan",
           web_app: {
-            // @ts-expect-error it will be fixed
             url: `https://solscan.io/account/${defaultSolWallet[0].publicKey}`,
           },
         },

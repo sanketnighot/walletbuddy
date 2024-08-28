@@ -52,7 +52,7 @@ const HandlePassword = () => {
           router.push("/")
         }
         alert("Password set successfully")
-        router.push("/")
+        router.push("/onboarding")
       } else {
         setError("Passwords do not match. Please try again.")
       }

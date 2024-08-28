@@ -4,6 +4,18 @@ import { derivePath } from "ed25519-hd-key"
 import { Keypair } from "@solana/web3.js"
 import bs58 from "bs58"
 
+type Response =
+  | {
+      success: true
+      message: string
+      data: any
+    }
+  | {
+      success: false
+      message: string
+      error: any
+    }
+
 const coinDerivePath = {
   bitcoin: "m/44'/0",
   ethereum: "m/44'/60",
@@ -14,11 +26,11 @@ const coinDerivePath = {
 
 type CoinType = keyof typeof coinDerivePath
 
-export const generateMnemonicForUser = async () => {
+export const generateMnemonicForUser = async (): Promise<Response> => {
   try {
     const mnemonic = await generateMnemonic()
     return {
-      mnemonic,
+      data: mnemonic,
       success: true,
       message: "Mnemonic generated successfully",
     }
@@ -31,11 +43,11 @@ export const generateMnemonicForUser = async () => {
   }
 }
 
-export const generateSeed = async (mnemonic: string) => {
+export const generateSeed = async (mnemonic: string): Promise<Response> => {
   try {
     const seed = await mnemonicToSeedSync(mnemonic)
     return {
-      seed,
+      data: seed,
       success: true,
       message: "Seed generated successfully",
     }
@@ -52,13 +64,13 @@ export const generateKeypair = async (
   seed: Buffer,
   coin: CoinType,
   index: number
-) => {
+): Promise<Response> => {
   try {
     const path = `${coinDerivePath[coin]}'/${index}'/0'`
     const derivedSeed = derivePath(path, seed.toString()).key
     const keypair = nacl.sign.keyPair.fromSeed(derivedSeed)
     return {
-      keypair,
+      data: keypair,
       success: true,
       message: "Keypair generated successfully",
     }
@@ -71,18 +83,22 @@ export const generateKeypair = async (
   }
 }
 
-export const createSolanaKeys = async (keyPair: nacl.SignKeyPair) => {
+export const createSolanaKeys = async (
+  keyPair: nacl.SignKeyPair
+): Promise<Response> => {
   try {
     const publicKey = Keypair.fromSecretKey(
       keyPair.secretKey
     ).publicKey.toBase58()
     const secretKey = await encodeSecretKey(keyPair.secretKey)
-    if (!secretKey || !secretKey.success || !secretKey.encodedSecretKey) {
+    if (!secretKey || !secretKey.success || !secretKey.data) {
       throw new Error("Failed to encode secret key")
     }
     return {
-      publicKey,
-      secretKey: secretKey.encodedSecretKey,
+      data: {
+        publicKey,
+        secretKey: secretKey.data,
+      },
       success: true,
       message: "Public key generated successfully",
     }
@@ -96,19 +112,23 @@ export const createSolanaKeys = async (keyPair: nacl.SignKeyPair) => {
   }
 }
 
-export const encodeSecretKey = async (secretKey: Uint8Array) => {
+export const encodeSecretKey = async (
+  secretKey: Uint8Array
+): Promise<Response> => {
   const encodedSecretKey = bs58.encode(secretKey)
   return {
-    encodedSecretKey,
+    data: encodedSecretKey,
     success: true,
     message: "Secret key encoded successfully",
   }
 }
 
-export const decodeSecretKey = async (encodedSecretKey: string) => {
+export const decodeSecretKey = async (
+  encodedSecretKey: string
+): Promise<Response> => {
   const decodedSecretKey = bs58.decode(encodedSecretKey)
   return {
-    decodedSecretKey,
+    data: decodedSecretKey,
     success: true,
     message: "Secret key decoded successfully",
   }

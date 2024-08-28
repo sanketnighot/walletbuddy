@@ -13,10 +13,7 @@ import SendBotResponse from "./services/TelegramBot/utils/BotResponse"
 import { createAccountKeyboard } from "./services/TelegramBot/utils/keyboards"
 import { manageAccount } from "./services/TelegramBot/menu/manageAccount"
 import { sendAccountDashboard } from "./services/TelegramBot/menu/accountDashboard"
-import {
-  confirmUserHasPassword,
-  generatePassword,
-} from "./services/TelegramBot/utils/managePasswords"
+
 import { passwordGenerationState } from "./services/TelegramBot/utils/globalStates"
 
 try {
@@ -25,23 +22,13 @@ try {
   })
 
   bot.on("message", async (msg: Message) => {
-    console.log(msg)
-    await ensureUser(BigInt(msg.from?.id || 0), msg.from?.username || "", msg.from?.first_name || "", msg.from?.last_name || "")
-    const userPassGenState = await passwordGenerationState.get(
-      msg.from?.id || 0
-    )
-    if (userPassGenState) {
-      generatePassword(msg)
-    }
+    await ensureUser(BigInt(msg.from?.id || 0), msg.from?.username || "")
     switch (msg.text) {
       case "❇️ Manage Subscriptions":
         await manageSubscriptions(msg)
         break
       case "🔑 Create/Import Account": {
-        const hasPassword = await confirmUserHasPassword(msg)
-        if (!hasPassword) {
-          await generatePassword(msg)
-        } else {
+
           await SendBotResponse(
             msg.chat.id,
             "Select an option from the menu below",
@@ -49,8 +36,6 @@ try {
               reply_markup: createAccountKeyboard,
             }
           )
-        }
-
         break
       }
       case "ℹ️ About":
