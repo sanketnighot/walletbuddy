@@ -45,7 +45,7 @@ export async function generateKeypairFromPrivateKey(
 export async function requestAirdrop(
   publicKey: string,
   amount: number = 1
-): Promise<string> {
+): Promise<boolean> {
   try {
     const rpcUrl = process.env.SOLANA_RPC || ""
     const connection = new Connection(rpcUrl, "confirmed")
@@ -57,10 +57,10 @@ export async function requestAirdrop(
     )
     await connection.confirmTransaction(signature)
 
-    return `💸 Airdrop of <b>${amount} $SOL</b> to <code>${publicKey}</code> successful!`
+    return true
   } catch (error) {
     console.error("Airdrop error:", error)
-    return "❌ Airdrop Failed. \n\nProbably due to rate limiting. \nTry again after some time"
+    return false
   }
 }
 

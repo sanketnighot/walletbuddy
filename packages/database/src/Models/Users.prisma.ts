@@ -1,19 +1,14 @@
-import { SolWallet, Subscription, User } from "@prisma/client"
+import { Subscription, User } from "@prisma/client"
 import logger from "../utils/logger"
 import { prisma } from "../client"
 
-type userType =
-  | ({
-      subscriptions: Subscription[]
-      SolWallets: SolWallet[]
-    } & User)
-  | null
+type userType = (User & {
+  subscriptions: Subscription[]
+}) | null
 
 export const ensureUser = async (
   chatId: bigint,
   username: string,
-  firstName: string,
-  lastName: string
 ): Promise<{
   success: boolean
   data?: Partial<User>
@@ -28,14 +23,10 @@ export const ensureUser = async (
       where: { chatId },
       update: {
         username: username || undefined,
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
       },
       create: {
         chatId,
         username: username || undefined,
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
       },
     })
     const userToLog = {
@@ -74,7 +65,6 @@ export const getUser = async (
       where: { chatId },
       include: {
         subscriptions: true,
-        SolWallets: true,
       },
     })
     if (!user) {
@@ -105,9 +95,14 @@ export const updateUser = async (
   message: string
 }> => {
   try {
+    const updatedData = {
+      ...data,
+      walletInfo: data.walletInfo ? { set: data.walletInfo } : undefined
+    };
+
     const user = await prisma.user.update({
       where: { chatId },
-      data,
+      data: updatedData,
     })
     const userToLog = {
       ...user,
