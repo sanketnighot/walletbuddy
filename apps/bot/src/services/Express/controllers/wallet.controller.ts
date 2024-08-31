@@ -1,45 +1,78 @@
 import { Request, Response } from "express"
 import { prisma, User, WalletSessionStatus } from "@repo/database"
+import SendBotResponse from "../../TelegramBot/utils/BotResponse"
 
 export const createWalletSession = async (req: Request, res: Response) => {
   try {
-    const { userId, userName, type, dapp } = req.body
-    if (!userId || !userName || !type || !dapp) {
+    const { dapp }: { dapp: {name: string, description?: string, url: string} } = req.body
+    if (!dapp) {
       return res.status(400).json({ error: 'Missing required fields' })
-    }
-    let userInfo: User | null = null
-    if (userName) {
-      userInfo = await prisma.user.findFirst({
-        where: {
-          username: userName,
-        },
-      })
-    }
-    if (userId) {
-      userInfo = await prisma.user.findFirst({
-        where: {
-          id: userId,
-        },
-      })
-    }
-    if (!userInfo) {
-      return res.status(404).json({ error: 'User not found' })
     }
 
     const walletSession = await prisma.walletSession.create({
       data: {
-        user: {
-          connect: {
-            id: userInfo.id,
-          },
-        },
-        type,
-        dapp,
-        status: WalletSessionStatus.PENDING,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        dapp: dapp,
+        status: "PENDING",
       },
     })
 
+    return res.status(200).json({ walletSession })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const updateWalletSession = async (req: Request, res: Response) => {
+  try {
+    const { sessionId, username }: { sessionId: string, username: string} = req.body
+    const user = await prisma.user.findFirst({
+      where: {
+        username,
+      }
+    })
+    if (!user || !user.username) {
+      return res.status(400).json({ error: 'User not found' })
+    }
+    const existingSession = await prisma.walletSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!existingSession) {
+      return res.status(404).json({ error: 'Invalid session' });
+    }
+    interface Dapp {
+      name?: string;
+      description?: string;
+      url?: string;
+    }
+    // Ensure existingSession.dapp is typed as Dapp
+    const dapp = existingSession.dapp as Dapp;
+    let message = ""
+    if (dapp) {
+      message += `Would you like to connect your wallet to <b><u>${dapp?.name ?? "this dapp"}</u></b>?\n\n`
+      message += `<i>${dapp?.description ?? ""}</i>\n`
+      message += `${dapp?.url ?? ""}`
+    }
+    await SendBotResponse(Number(user.chatId), message, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "✅ Connect", callback_data: `wallet_connect/${sessionId}` },
+            { text: "❌ Reject", callback_data: `wallet_reject/${sessionId}` }
+          ],
+        ],
+      },
+    })
+    const walletSession = await prisma.walletSession.update({
+      where: { id: sessionId },
+      data: {
+        user: {
+          connect: {
+            id: user.id,
+          }
+        }
+      },
+    });
     return res.status(200).json({ walletSession })
   } catch (error: any) {
     res.status(500).json({ error: error.message })
@@ -53,8 +86,31 @@ export const getWalletSession = async (req: Request, res: Response) => {
       where: {
         id,
       },
+      select: {
+        id: true,
+        status: true,
+        dapp: true,
+        user: {
+          select: {
+            walletInfo: true,
+          }
+        },
+      },    
     })
-    return res.status(200).json({ walletSession })
+
+    return res.status(200).json({
+      walletSession: {
+        ...walletSession,
+        user: {
+          ...walletSession?.user,
+          walletInfo: walletSession?.status === 'ACCEPTED'
+            ? walletSession?.user?.walletInfo.map((wallet: any) => ({
+                publicKey: wallet.publicKey,
+              }))
+            : undefined,
+        },
+      }
+    })
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }

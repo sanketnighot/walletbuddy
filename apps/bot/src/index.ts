@@ -15,6 +15,7 @@ import { manageAccount } from "./services/TelegramBot/menu/manageAccount"
 import { sendAccountDashboard } from "./services/TelegramBot/menu/accountDashboard"
 
 import { passwordGenerationState } from "./services/TelegramBot/utils/globalStates"
+import { connectWallet, rejectWallet } from "./services/TelegramBot/menu/manageSessions"
 
 try {
   bot.on("polling_error", (error) => {
@@ -48,7 +49,7 @@ try {
   })
 
   bot.on("callback_query", async (query: CallbackQuery) => {
-    const [query_type] = query.data!.split("/")
+    const [query_type, query_info] = query.data!.split("/")
     switch (query_type) {
       case "subscription":
         bot.answerCallbackQuery(query.id)
@@ -58,6 +59,26 @@ try {
         bot.answerCallbackQuery(query.id)
         await manageAccount(query)
         break
+      case "wallet_connect":{
+        bot.answerCallbackQuery(query.id)
+        const res= await connectWallet(query_info)
+        if (res) {
+          SendBotResponse(query.from.id, "Wallet Connected")
+        } else {
+          SendBotResponse(query.from.id, "Failed to connect wallet")
+        }
+        break
+      }
+      case "wallet_reject":{
+        bot.answerCallbackQuery(query.id)
+        const res = await rejectWallet(query_info)
+        if (res) {
+          SendBotResponse(query.from.id, "Wallet Rejected")
+        } else {
+          SendBotResponse(query.from.id, "Failed to reject wallet")
+        }
+        break
+      }
     }
   })
 
