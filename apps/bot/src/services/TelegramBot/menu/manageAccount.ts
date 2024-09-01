@@ -1,11 +1,6 @@
 import { CallbackQuery } from "node-telegram-bot-api"
 import logger from "../../../utils/logger"
-import {
-  createAccountUsingKeypair,
-  importAccountUsingKeypair,
-} from "./manageWallets"
 import SendBotResponse from "../utils/BotResponse"
-import { mainMenuWithWallets } from "../utils/keyboards"
 import bot from ".."
 
 export const manageAccount = async (query: CallbackQuery) => {
@@ -32,61 +27,61 @@ export const manageAccount = async (query: CallbackQuery) => {
           )
         }
         break
-      case "keypair":
-        if (query_status === "c") {
-          if (query_action === "create") {
-            const createAccountResponse = await createAccountUsingKeypair(
-              BigInt(chatId || 0),
-              "password"
-            )
-            if (!createAccountResponse.success) {
-              await SendBotResponse(
-                chatId,
-                "Error Creating Account Using Keypair"
-              )
-              return
-            }
-            let message = createAccountResponse.message
-            message += `\n\nYour Public Key: <code>${createAccountResponse.data?.publicKey}</code>`
-            await bot.deleteMessage(chatId || 0, query.message?.message_id || 0)
-            await SendBotResponse(chatId, message, {
-              reply_markup: mainMenuWithWallets,
-            })
-          } else if (query_action === "import") {
-            await importAccountUsingKeypair()
-            await SendBotResponse(chatId, "Importing Account Using Keypair")
-          }
-        } else if (query_status === "nc") {
-          if (query_action === "create") {
-            const inline_keyboard = [
-              [
-                {
-                  text: "✅ Confirm Transaction",
-                  callback_data: "account/create/keypair/c",
-                },
-              ],
-            ]
-            await SendBotResponse(chatId, "Creating Account Using Keypair", {
-              reply_markup: {
-                inline_keyboard,
-              },
-            })
-          } else if (query_action === "import") {
-            const inline_keyboard = [
-              [
-                {
-                  text: "✅ Confirm Transaction",
-                  callback_data: "account/import/keypair/c",
-                },
-              ],
-            ]
-            await SendBotResponse(chatId, "Importing Account Using Keypair", {
-              reply_markup: {
-                inline_keyboard,
-              },
-            })
-          }
-        }
+      // case "keypair":
+      //   if (query_status === "c") {
+      //     if (query_action === "create") {
+      //       const createAccountResponse = await createAccountUsingKeypair(
+      //         BigInt(chatId || 0),
+      //         "password"
+      //       )
+      //       if (!createAccountResponse.success) {
+      //         await SendBotResponse(
+      //           chatId,
+      //           "Error Creating Account Using Keypair"
+      //         )
+      //         return
+      //       }
+      //       let message = createAccountResponse.message
+      //       message += `\n\nYour Public Key: <code>${createAccountResponse.data?.publicKey}</code>`
+      //       await bot.deleteMessage(chatId || 0, query.message?.message_id || 0)
+      //       await SendBotResponse(chatId, message, {
+      //         reply_markup: mainMenuWithWallets,
+      //       })
+      //     } else if (query_action === "import") {
+      //       await importAccountUsingKeypair()
+      //       await SendBotResponse(chatId, "Importing Account Using Keypair")
+      //     }
+      //   } else if (query_status === "nc") {
+      //     if (query_action === "create") {
+      //       const inline_keyboard = [
+      //         [
+      //           {
+      //             text: "✅ Confirm Transaction",
+      //             callback_data: "account/create/keypair/c",
+      //           },
+      //         ],
+      //       ]
+      //       await SendBotResponse(chatId, "Creating Account Using Keypair", {
+      //         reply_markup: {
+      //           inline_keyboard,
+      //         },
+      //       })
+      //     } else if (query_action === "import") {
+      //       const inline_keyboard = [
+      //         [
+      //           {
+      //             text: "✅ Confirm Transaction",
+      //             callback_data: "account/import/keypair/c",
+      //           },
+      //         ],
+      //       ]
+      //       await SendBotResponse(chatId, "Importing Account Using Keypair", {
+      //         reply_markup: {
+      //           inline_keyboard,
+      //         },
+      //       })
+      //     }
+      //   }
         break
     }
   } catch (error) {

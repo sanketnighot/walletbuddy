@@ -31,7 +31,7 @@ export const createAccountKeyboard: InlineKeyboardMarkup = {
       {
         text: "🔑 Create/Import Account",
         web_app: {
-          url: "https://webapp.therapix.in",
+          url: process.env.WEBAPP_URL || "",
         },
       },
     ],

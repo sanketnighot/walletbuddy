@@ -28,7 +28,7 @@ const App = () => {
       console.log("walletData", walletData)
       if (!passwordStorage) {
         router.push("/setNewPassword")
-      } else if (!userDataError && walletData.walletInfo.length > 0) {
+      } else if (!userDataError && walletData?.walletInfo?.length > 0) {
         router.push(`/accounts?tab=tokens`)
       } else {
         router.push("/onboarding/createWallet")

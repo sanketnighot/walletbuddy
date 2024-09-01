@@ -103,6 +103,11 @@ interface TelegramWebApp {
         callback?: (error: Error | null, keys: string[]) => void
       ) => void
     }
+    showScanQrPopup: (
+      params: ScanQrPopupParams,
+      callback?: (text: string) => void
+    ) => void
+    closeScanQrPopup: () => void
     headerColor: string
     backgroundColor: string
     isClosingConfirmationEnabled: boolean
@@ -189,6 +194,10 @@ interface ThemeParams {
   section_header_text_color: string
   subtitle_text_color: string
   text_color: string
+}
+
+type ScanQrPopupParams = {
+  text?: string
 }
 
 export type { TelegramWebApp }

@@ -2,10 +2,12 @@
   "name": "walletbuddy",
   "private": true,
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "deploy": "turbo run deploy",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

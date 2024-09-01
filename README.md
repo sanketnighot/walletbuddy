@@ -49,9 +49,9 @@ Check this telegram bot for demo [@solanabuddy_bot](https://t.me/solanabuddy_bot
 - [x]  Whale Alerts
 - [x]  Transaction Alerts (User Addresses)
 - [x]  Airdrop (Devnet)
-- [ ]  Web3 News
-- [ ]  Mini Games
-- [ ]  NFT Library
-- [ ]  Learn Web3
-- [ ]  Connect dapps to wallet
+- [x]  Connect dapps to wallet
+- [x]  Mini Games
+- [x]  NFT Library
 - [ ]  Sign transactions sent by dapps
+- [ ]  Web3 News
+- [ ]  Learn Web3

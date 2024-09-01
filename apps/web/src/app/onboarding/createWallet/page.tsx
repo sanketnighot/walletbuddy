@@ -111,7 +111,7 @@ const CreateWallet = () => {
       wallet: account,
     }
     const response = await axios.post(
-      "https://webhook.therapix.in/api/v1/wallet/create",
+      `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/wallet/create`,
       walletInfo
     )
     console.log("response", response)

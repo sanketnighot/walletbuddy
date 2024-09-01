@@ -5,7 +5,7 @@ import logger from "../../utils/logger"
 import app from "../Express/app"
 
 const token = process.env.TELEGRAM_BOT_TOKEN
-const url = "https://webhook.therapix.in"
+const url = process.env.WEBHOOK_URL || ""
 const port = process.env.PORT || 8000
 
 if (token === undefined) {

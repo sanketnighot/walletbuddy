@@ -18,10 +18,10 @@ const useUserData = () => {
           setUserData(response)
           setError(null)
         } else {
-          setError("Error fetching user data")
+          setError("Error fetching user info")
         }
         const walletResponse = await axios.get(
-          `https://webhook.therapix.in/api/v1/wallet/get?chatId=${response?.id}`
+          `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/wallet/get?chatId=${response?.id}`
         )
         if (walletResponse.data) {
           const userWalletData = await walletResponse.data
@@ -31,7 +31,7 @@ const useUserData = () => {
           setError("Error fetching wallet data")
         }
       } catch (error) {
-        setError("Error fetching user data")
+        setError("Error fetching user")
         setError(null)
       } finally {
         setLoading(false)
