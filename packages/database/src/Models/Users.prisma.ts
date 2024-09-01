@@ -85,40 +85,40 @@ export const getUser = async (
   }
 }
 
-export const updateUser = async (
-  chatId: bigint,
-  data: Partial<User>
-): Promise<{
-  success: boolean
-  data?: User
-  error?: unknown
-  message: string
-}> => {
-  try {
-    const updatedData = {
-      ...data,
-      walletInfo: data.walletInfo ? { set: data.walletInfo } : undefined
-    };
+// export const updateUser = async (
+//   chatId: bigint,
+//   data: Partial<User>
+// ): Promise<{
+//   success: boolean
+//   data?: User
+//   error?: unknown
+//   message: string
+// }> => {
+//   try {
+//     const updatedData = {
+//       ...data,
+//       walletInfo: data.walletInfo ? data.walletInfo : undefined
+//     };
 
-    const user = await prisma.user.update({
-      where: { chatId },
-      data: updatedData,
-    })
-    const userToLog = {
-      ...user,
-      chatId: Number(user.chatId),
-    }
-    logger.info(`User ${userToLog.chatId} updated`, userToLog)
-    return {
-      success: true,
-      data: user,
-      message: "User updated successfully",
-    }
-  } catch (error: unknown) {
-    logger.error(`Error updating user ${chatId}`, error)
-    return { success: false, error: error, message: "Error updating user" }
-  }
-}
+//     const user = await prisma.user.update({
+//       where: { chatId },
+//       data: updatedData,
+//     })
+//     const userToLog = {
+//       ...user,
+//       chatId: Number(user.chatId),
+//     }
+//     logger.info(`User ${userToLog.chatId} updated`, userToLog)
+//     return {
+//       success: true,
+//       data: user,
+//       message: "User updated successfully",
+//     }
+//   } catch (error: unknown) {
+//     logger.error(`Error updating user ${chatId}`, error)
+//     return { success: false, error: error, message: "Error updating user" }
+//   }
+// }
 
 export const deleteUser = async (
   chatId: bigint

@@ -7,6 +7,7 @@ import { getBalance } from "../../Solana/wallets"
 
 export const sendAccountDashboard = async (msg: Message) => {
   try {
+    console.log("Sending account dashboard")
     const chatId = BigInt(msg.chat.id)
     const user = await getUser(chatId)
     if (!user) {
@@ -16,32 +17,34 @@ export const sendAccountDashboard = async (msg: Message) => {
     let dashboardMessage = await getAccountDashboardMessage(
       user.data?.username || "User"
     )
-    const defaultSolWallet = (user.data?.walletInfo as { defaultWallet?: any })?.defaultWallet
+    // const defaultSolWallet = (user.data?.walletInfo as { defaultWallet?: any })?.defaultWallet
 
-    const defaultSolWalletBalance = await getBalance(
-      defaultSolWallet
-    )
-    if ((defaultSolWallet?.length ?? 0) > 0) {
-      dashboardMessage += `💳 <b><u>Default Wallet</u></b>: <code>${defaultSolWallet}</code>\n`
-      dashboardMessage += `💰 <b><u>Balance</u></b>: ${defaultSolWalletBalance} SOL`
-    }
+    // const defaultSolWalletBalance = await getBalance(
+    //   defaultSolWallet
+    // )
+    // if ((defaultSolWallet?.length ?? 0) > 0) {
+    //   dashboardMessage += `💳 <b><u>Default Wallet</u></b>: <code>${defaultSolWallet}</code>\n`
+    //   dashboardMessage += `💰 <b><u>Balance</u></b>: ${defaultSolWalletBalance} SOL`
+    // }
     const inlineKeyboard = [
       [
         {
-          text: "🔗 Open Solscan",
+          text: "💳 Open Wallet",
           web_app: {
-            url: `https://solscan.io/account/${defaultSolWallet[0].publicKey}`,
+            url: `${process.env.WEBAPP_URL}/accounts?tab=tokens`,
           },
         },
         {
-          text: "⚙️ Manage Wallets",
-          callback_data: "dashboard/changeDefaultWallet",
+          text: "📱 Scan QR",
+          web_app: {
+            url: `${process.env.WEBAPP_URL}/scan`,
+          },
         },
       ],
       [
         {
-          text: "↗️ Export Private Key",
-          callback_data: "dashboard/exportPrivateKey",
+          text: "⚙️ Manage Wallets",
+          callback_data: "dashboard/changeDefaultWallet",
         },
       ],
     ]

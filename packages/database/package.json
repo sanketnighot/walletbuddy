@@ -8,7 +8,9 @@
     "db:push": "prisma db push --skip-generate",
     "db:init": "docker compose up -d",
     "dev": "tsc --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
