@@ -28,7 +28,7 @@ const Subscriptions = ({ userId }: { userId: any }) => {
     if (userId) {
       try {
         const response = await axios.get(
-          `https://webhook.therapix.in/api/v1/wallet/getSubscriptions?chatId=${userId}`
+          `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/wallet/getSubscriptions?chatId=${userId}`
         )
         setSubscriptions(response.data)
       } catch (error) {
@@ -43,10 +43,13 @@ const Subscriptions = ({ userId }: { userId: any }) => {
 
   const handleSubscribe = async (subscriptionId: string) => {
     try {
-      await axios.post(`https://webhook.therapix.in/api/v1/wallet/subscribe`, {
-        chatId: userId,
-        subscriptionId: subscriptionId,
-      })
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/wallet/subscribe`,
+        {
+          chatId: userId,
+          subscriptionId: subscriptionId,
+        }
+      )
       fetchSubscriptions()
     } catch (error) {
       console.error("Error subscribing to subscription:", error)
@@ -56,7 +59,7 @@ const Subscriptions = ({ userId }: { userId: any }) => {
   const handleUnsubscribe = async (subscriptionId: string) => {
     try {
       await axios.post(
-        `https://webhook.therapix.in/api/v1/wallet/unsubscribe`,
+        `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/wallet/unsubscribe`,
         {
           chatId: userId,
           subscriptionId: subscriptionId,

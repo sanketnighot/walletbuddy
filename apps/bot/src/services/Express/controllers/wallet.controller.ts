@@ -79,12 +79,75 @@ export const updateWalletSession = async (req: Request, res: Response) => {
   }
 }
 
+export const acceptWalletSession = async (req: Request, res: Response) => {
+  try {
+    const { sessionId, chatId } = req.body
+    const walletSession = await prisma.walletSession.update({
+      where: { id: sessionId },
+      data: {
+        status: "ACCEPTED",
+        user: {
+          connect: {
+            chatId: chatId,
+          }
+        }
+      }, 
+      include: {
+        user: true
+      }
+    })
+    if (!walletSession) {
+      return res.status(404).json({ error: 'Wallet session not found' })
+    }
+
+    interface Dapp {
+      name: string;
+      description?: string;
+      url: string;
+    }
+
+    const dapp = walletSession.dapp as unknown as Dapp;
+
+    let message = ""
+    if (walletSession) {
+      message += `Wallet connected to <b><u>${dapp?.name ?? "this dapp"}</u></b>?\n\n`
+      message += `<i>${dapp?.description ?? ""}</i>\n`
+      message += `${dapp?.url ?? ""}`
+    }
+    await SendBotResponse(Number(walletSession.user?.id), message)
+    return res.status(200).json({ status: "success", message: "Wallet connected" })
+  } catch (error: any) {
+    res.status(500).json({ status: "failed", error: error.message })
+  }
+}
+
+export const rejectWalletSession = async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.body
+    const walletSession = await prisma.walletSession.update({
+      where: { id: sessionId },
+      data: {
+        status: "REJECTED",
+      },
+    })
+    return res.status(200).json({ status: "success", message: "Wallet rejected" })
+  } catch (error: any) {
+    res.status(500).json({ status: "failed", error: error.message })
+  }
+}
+
+
 export const getWalletSession = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
-    const walletSession = await prisma.walletSession.findFirst({
+    const { sessionId } = req.query
+    console.log("sessionId", sessionId)
+    if (!sessionId || typeof sessionId !== 'string') {
+      return res.status(400).json({ error: 'Invalid or missing sessionId' })
+    }
+
+    const walletSession = await prisma.walletSession.findUnique({
       where: {
-        id,
+        id: sessionId,
       },
       select: {
         id: true,
@@ -98,24 +161,27 @@ export const getWalletSession = async (req: Request, res: Response) => {
       },    
     })
 
-    return res.status(200).json({
-      walletSession: {
-        ...walletSession,
-        user: {
-          ...walletSession?.user,
-          walletInfo: walletSession?.status === 'ACCEPTED'
-            ? walletSession?.user?.walletInfo.map((wallet: any) => ({
-                publicKey: wallet.publicKey,
-              }))
-            : undefined,
-        },
-      }
-    })
+    if (!walletSession) {
+      return res.status(404).json({ error: 'Wallet session not found' })
+    }
+
+    const response = {
+      id: walletSession.id,
+      status: walletSession.status,
+      dapp: walletSession.dapp,
+      user: walletSession.status === 'ACCEPTED' ? {
+        walletInfo: walletSession.user?.walletInfo.map((wallet: any) => ({
+          publicKey: wallet.publicKey,
+        }))
+      } : undefined,
+    }
+
+    return res.status(200).json(response)
   } catch (error: any) {
-    res.status(500).json({ error: error.message })
+    console.error('Error in getWalletSession:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
-
 
 export const createWallet = async (req: Request, res: Response) => {
   try {

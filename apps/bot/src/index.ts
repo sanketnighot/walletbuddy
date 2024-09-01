@@ -98,7 +98,7 @@ try {
           [
             {
               text: "Open Webapp",
-              web_app: { url: "https://webapp.therapix.in/" },
+              web_app: { url: process.env.WEBAPP_URL || "" },
             },
           ],
         ],

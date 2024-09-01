@@ -26,6 +26,29 @@
         "dist/**"
       ]
     },
+    "start": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "jest.config.js"
+      ]
+    },
+    "deploy": {
+      "dependsOn": [
+        "build",
+        "test",
+        "lint"
+      ],
+      "cache": false
+    },
     "lint": {
       "dependsOn": [
         "^db:generate",
