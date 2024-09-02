@@ -3,14 +3,14 @@ import { motion, useInView } from 'framer-motion';
 import { roadmapItems } from '../data/roadmap';
 
 const RoadmapItem: React.FC<{ phase: string; description: string; status: string; details: string[]; index: number }> = ({ phase, description, status, details, index }) => {
-  const ref = React.useRef(null);
+	const ref = React.useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
     <motion.div 
       ref={ref}
-      initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-      animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+      initial={{ opacity: 0, x: -50 }}
+      animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="bg-background-light p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
     >
@@ -55,7 +55,7 @@ export const RoadmapSection: React.FC = () => {
 
   return (
     <section id="roadmap" className="py-20 bg-gradient-to-tl from-background to-background-light">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto">
         <motion.h2 
           ref={ref}
           initial={{ opacity: 0, y: -50 }}
