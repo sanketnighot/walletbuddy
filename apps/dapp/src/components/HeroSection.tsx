@@ -5,7 +5,7 @@ export const HeroSection: React.FC = () => (
   <motion.section 
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
-    transition={{ duration: 1 }}
+    transition={{ duration: 1, delay: 0.2 }}
     className="flex flex-col justify-center items-center h-screen text-center relative overflow-hidden bg-gradient-to-br from-background to-background-light"
   >
     {/* Background animation */}
@@ -41,7 +41,7 @@ export const HeroSection: React.FC = () => (
         animate={{ y: 0 }}
         transition={{ delay: 0.2, duration: 0.8 }}
       >
-        Welcome to Wallet Buddy V2
+        Welcome to Wallet Buddy
       </motion.h1>
       <motion.p 
         className="text-2xl text-text-dark mb-8"
