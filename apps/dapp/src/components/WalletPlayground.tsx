@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import QRCode from 'react-qr-code';
-
-const generateRandomString = (length: number): string => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
+import axios from 'axios';
 
 export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -19,10 +11,37 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
   const [recipient, setRecipient] = useState('');
   const [username, setUsername] = useState('');
   const [qrCodeData, setQrCodeData] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setQrCodeData(generateRandomString(10));
-  }, []);
+    if (isOpen) {
+      fetchSessionData();
+    }
+  }, [isOpen]);
+
+  const fetchSessionData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`${process.env.VITE_WEBHOOK_URL}/api/v1/session/create`, {
+        dapp: {
+          name: "Sanket's Dapp",
+          url: "https://walletbuddy.sanketnighot.com"
+        }
+      });
+      if (!response.data) {
+        throw new Error('Failed to fetch session data');
+      }
+      const data = response.data;
+      setQrCodeData(data.walletSession.id);
+    } catch (err) {
+      setError('Failed to generate QR code. Please try again.');
+      console.error('Error fetching session data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleConnect = () => {
     if (username.trim()) {
@@ -40,6 +59,7 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
     setAmount('');
     setRecipient('');
     setUsername('');
+    fetchSessionData(); // Fetch new session data when disconnecting
   };
 
   const handleSignMessage = () => {
@@ -52,16 +72,25 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
     // Implement actual SOL sending logic here
   };
 
+  const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm"
+      onClick={handleOutsideClick}  // Add this line
+    >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         className="bg-background-light rounded-lg p-8 w-full max-w-md mx-auto shadow-xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}  // Prevent closing when clicking inside the modal
       >
         <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           Wallet Playground
@@ -165,7 +194,13 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
             </p>
             
             <div className="bg-white p-4 rounded-lg shadow-inner flex items-center justify-center">
-              <QRCode value={qrCodeData} size={192} />
+              {isLoading ? (
+                <p>Loading QR code...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : (
+                <QRCode value={qrCodeData} size={192} />
+              )}
             </div>
 
             <div className="flex items-center">
