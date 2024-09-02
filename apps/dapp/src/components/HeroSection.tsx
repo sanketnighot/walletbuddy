@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import logo from '../assets/walletbuddylogo.png';
 
 export const HeroSection: React.FC = () => (
-  <motion.section 
+	<motion.section 
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 1, delay: 0.2 }}
@@ -35,11 +36,19 @@ export const HeroSection: React.FC = () => (
     </div>
 
     <div className="z-10 max-w-4xl px-4">
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.8 }}
+        className="mb-6"
+      >
+        <img src={logo} alt="Wallet Buddy Logo" className="h-32 w-32 mx-auto" />
+      </motion.div>
       <motion.h1 
         className="text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
         initial={{ y: -50 }}
         animate={{ y: 0 }}
-        transition={{ delay: 0.2, duration: 0.8 }}
+        transition={{ delay: 0.4, duration: 0.8 }}
       >
         Welcome to Wallet Buddy
       </motion.h1>
@@ -47,7 +56,7 @@ export const HeroSection: React.FC = () => (
         className="text-2xl text-text-dark mb-8"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
+        transition={{ delay: 0.7, duration: 0.8 }}
       >
         Your all-in-one Telegram super bot for Web3 activities
       </motion.p>
@@ -55,7 +64,7 @@ export const HeroSection: React.FC = () => (
         className="flex justify-center space-x-4"
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
+        transition={{ delay: 1, duration: 0.5 }}
       >
         <motion.button 
           whileHover={{ scale: 1.05 }}
