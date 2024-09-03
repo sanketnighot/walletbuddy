@@ -6,6 +6,7 @@ export const useWalletSession = (isOpen: boolean) => {
   const [qrCodeData, setQrCodeData] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [publicKey, setPublicKey] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export const useWalletSession = (isOpen: boolean) => {
         const parsedData = JSON.parse(storedSessionData);
         setIsConnected(true);
         setQrCodeData(parsedData.id);
+        setPublicKey(parsedData.user.walletInfo[0].publicKey);
       } else {
         handleFetchSessionData();
       }
@@ -47,11 +49,13 @@ export const useWalletSession = (isOpen: boolean) => {
           if (data.status === 'ACCEPTED') {
             stopPolling();
             setIsConnected(true);
+            setPublicKey(data.publicKey);
             localStorage.setItem('walletSessionData', JSON.stringify(data));
           }
           if (data.status === 'REJECTED') {
             stopPolling();
             setIsConnected(false);
+            setPublicKey(null);
             localStorage.removeItem('walletSessionData');
             alert("Wallet Connection rejected");
           }
@@ -89,6 +93,7 @@ export const useWalletSession = (isOpen: boolean) => {
 
   const handleDisconnect = () => {
     setIsConnected(false);
+    setPublicKey(null);
     localStorage.removeItem('walletSessionData');
     handleFetchSessionData();
   };
@@ -98,6 +103,7 @@ export const useWalletSession = (isOpen: boolean) => {
     qrCodeData,
     isLoading,
     error,
+    publicKey,
     handleConnect,
     handleDisconnect,
     setError,

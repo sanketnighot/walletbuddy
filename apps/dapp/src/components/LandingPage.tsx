@@ -5,10 +5,16 @@ import { FeaturesSection } from './FeaturesSection';
 import { RoadmapSection } from './RoadmapSection';
 import { ContactSection } from './ContactSection';
 import { Footer } from './Footer';
+import { motion } from 'framer-motion';
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="bg-background text-text">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="bg-background text-text min-h-screen"
+    >
       <Header />
       <main>
         <HeroSection />
@@ -17,7 +23,7 @@ const LandingPage: React.FC = () => {
         <ContactSection />
       </main>
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 

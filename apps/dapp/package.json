@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@solana/web3.js": "^1.95.3",
     "@types/qrcode.react": "^1.0.5",
     "axios": "^1.7.7",
+    "buffer": "^6.0.3",
     "framer-motion": "^11.3.31",
     "qrcode.react": "^4.0.1",
     "react": "^18.3.1",
