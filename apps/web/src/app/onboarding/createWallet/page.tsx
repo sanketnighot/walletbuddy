@@ -117,13 +117,13 @@ const CreateWallet = () => {
     console.log("response", response)
     if (response.status === 200) {
       alert("Wallet created successfully")
-      router.push("accounts?tab=${tab}")
+      router.push("/accounts?tab=tokens")
       return
     } else {
       console.log("Error creating wallet: ", response.data.message)
       setError("Error creating wallet")
     }
-    router.push("/")
+    router.push("/accounts?tab=tokens")
   }
 
   useEffect(() => {
