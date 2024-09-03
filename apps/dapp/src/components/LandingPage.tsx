@@ -2,6 +2,7 @@ import React from 'react';
 import { Header } from './Header';
 import { HeroSection } from './HeroSection';
 import { FeaturesSection } from './FeaturesSection';
+import { ProjectDemoSection } from './ProjectDemoSection';
 import { RoadmapSection } from './RoadmapSection';
 import { ContactSection } from './ContactSection';
 import { Footer } from './Footer';
@@ -18,6 +19,7 @@ const LandingPage: React.FC = () => {
       <Header />
       <main>
         <HeroSection />
+        <ProjectDemoSection />
         <FeaturesSection />
         <RoadmapSection />
         <ContactSection />

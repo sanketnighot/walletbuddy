@@ -37,7 +37,7 @@ export const updateSessionWithUsername = async (sessionId: string, username: str
 
 export const checkSessionStatus = async (sessionId: string) => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_WEBHOOK_URL}/api/v1/session/${sessionId}/status`);
+    const response = await axios.get(`${import.meta.env.VITE_WEBHOOK_URL}/api/v1/session?sessionId=${sessionId}`);
     if (!response.data) {
       throw new Error('Failed to check session status');
     }
