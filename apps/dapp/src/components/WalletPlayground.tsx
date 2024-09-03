@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import QRCode from 'react-qr-code';
-import axios from 'axios';
+import { ConnectedWallet } from './ConnectedWallet';
+import { WalletConnection } from './WalletConnection';
+import { fetchSessionData, updateSessionWithUsername, checkSessionStatus } from '../utils/api';
 
 export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -13,42 +14,85 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
   const [qrCodeData, setQrCodeData] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      fetchSessionData();
+      const storedSessionData = localStorage.getItem('walletSessionData');
+      if (storedSessionData) {
+        const parsedData = JSON.parse(storedSessionData);
+        setIsConnected(true);
+        setQrCodeData(parsedData.id);
+      } else {
+        handleFetchSessionData();
+      }
+    } else {
+      stopPolling();
     }
+    return () => stopPolling();
   }, [isOpen]);
 
-  const fetchSessionData = async () => {
+  const handleFetchSessionData = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_WEBHOOK_URL}/api/v1/session/create`, {
-        dapp: {
-          name: "Sanket's Dapp",
-          url: "https://walletbuddy.sanketnighot.com"
-        }
-      });
-      if (!response.data) {
-        throw new Error('Failed to fetch session data');
-      }
-      const data = response.data;
-      setQrCodeData(data.walletSession.id);
+      const sessionId = await fetchSessionData();
+      setQrCodeData(sessionId);
+      startPolling(sessionId);
     } catch (err) {
       setError('Failed to generate QR code. Please try again.');
-      console.error('Error fetching session data:', err);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleConnect = () => {
+  const startPolling = (sessionId: string) => {
+    stopPolling(); // Clear any existing interval
+    pollingIntervalRef.current = setInterval(() => {
+      checkSessionStatus(sessionId)
+        .then((data) => {
+          if (data.status === 'ACCEPTED') {
+            stopPolling();
+            setIsConnected(true);
+            localStorage.setItem('walletSessionData', JSON.stringify(data));
+          }
+					if (data.status === 'REJECTED') {
+            stopPolling();
+            setIsConnected(false);
+            localStorage.removeItem('walletSessionData');
+						alert("Wallet Connection rejected")
+          }
+        })
+        .catch((err) => {
+          console.error('Error polling session status:', err);
+        });
+    }, 5000); // Poll every 5 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  const handleConnect = async () => {
     if (username.trim()) {
-      setIsConnected(true);
-      setActiveTab('signMessage');
+      setIsLoading(true);
+      setError(null);
+      try {
+        await updateSessionWithUsername(qrCodeData, username.trim());
+        // Start polling again after updating username
+        startPolling(qrCodeData);
+      } catch (err) {
+        setError('Failed to connect wallet. Please try again.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      alert('Please enter a username');
+      setError('Please enter a username');
     }
   };
 
@@ -59,7 +103,8 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
     setAmount('');
     setRecipient('');
     setUsername('');
-    fetchSessionData(); // Fetch new session data when disconnecting
+    localStorage.removeItem('walletSessionData');
+    onClose(); // Close the popup
   };
 
   const handleSignMessage = () => {
@@ -83,147 +128,42 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm"
-      onClick={handleOutsideClick}  // Add this line
+      onClick={handleOutsideClick}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         className="bg-background-light rounded-lg p-8 w-full max-w-md mx-auto shadow-xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}  // Prevent closing when clicking inside the modal
+        onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           Wallet Playground
         </h2>
 
         {isConnected ? (
-          <>
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
-            >
-              <button
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-300"
-                onClick={handleDisconnect}
-              >
-                Disconnect Wallet
-              </button>
-            </motion.div>
-
-            <div className="flex justify-center space-x-4 mb-6">
-              <button
-                className={`px-6 py-3 rounded-full text-lg ${
-                  activeTab === 'signMessage' ? 'bg-primary text-white' : 'bg-background text-text-dark'
-                }`}
-                onClick={() => setActiveTab('signMessage')}
-              >
-                Sign Message
-              </button>
-              <button
-                className={`px-6 py-3 rounded-full text-lg ${
-                  activeTab === 'sendSol' ? 'bg-primary text-white' : 'bg-background text-text-dark'
-                }`}
-                onClick={() => setActiveTab('sendSol')}
-              >
-                Send SOL
-              </button>
-            </div>
-
-            {activeTab === 'signMessage' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-4"
-              >
-                <textarea
-                  className="w-full bg-background text-text p-4 rounded-lg resize-none h-40"
-                  placeholder="Enter your message here"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                />
-                <button
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-300"
-                  onClick={handleSignMessage}
-                >
-                  Sign Message
-                </button>
-              </motion.div>
-            )}
-
-            {activeTab === 'sendSol' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-4"
-              >
-                <input
-                  type="text"
-                  className="w-full bg-background text-text p-4 rounded-lg"
-                  placeholder="Amount of SOL"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-                <input
-                  type="text"
-                  className="w-full bg-background text-text p-4 rounded-lg"
-                  placeholder="Recipient address"
-                  value={recipient}
-                  onChange={(e) => setRecipient(e.target.value)}
-                />
-                <button
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-300"
-                  onClick={handleSendSol}
-                >
-                  Send SOL
-                </button>
-              </motion.div>
-            )}
-          </>
+          <ConnectedWallet
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            handleDisconnect={handleDisconnect}
+            handleSignMessage={handleSignMessage}
+            handleSendSol={handleSendSol}
+            message={message}
+            setMessage={setMessage}
+            amount={amount}
+            setAmount={setAmount}
+            recipient={recipient}
+            setRecipient={setRecipient}
+          />
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            <p className="text-center text-text-dark">
-              To connect your wallet, scan the QR code below with your Telegram app or enter your Telegram username.
-            </p>
-            
-            <div className="bg-white p-4 rounded-lg shadow-inner flex items-center justify-center">
-              {isLoading ? (
-                <p>Loading QR code...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <QRCode value={qrCodeData} size={192} />
-              )}
-            </div>
-
-            <div className="flex items-center">
-              <div className="flex-grow h-px bg-text-dark"></div>
-              <span className="px-4 text-text-dark">OR</span>
-              <div className="flex-grow h-px bg-text-dark"></div>
-            </div>
-
-            <input
-              type="text"
-              className="w-full bg-background text-text p-4 rounded-lg"
-              placeholder="Enter your Telegram username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-
-            <button
-              className="w-full bg-secondary hover:bg-secondary-dark text-white font-bold py-4 px-6 rounded-full shadow-lg transition-colors duration-300 text-xl"
-              onClick={handleConnect}
-            >
-              Connect Wallet
-            </button>
-          </motion.div>
+          <WalletConnection
+            isLoading={isLoading}
+            error={error}
+            qrCodeData={qrCodeData}
+            username={username}
+            setUsername={setUsername}
+            handleConnect={handleConnect}
+          />
         )}
 
         <button
