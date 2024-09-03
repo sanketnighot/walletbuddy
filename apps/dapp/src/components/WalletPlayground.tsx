@@ -24,7 +24,7 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${process.env.VITE_WEBHOOK_URL}/api/v1/session/create`, {
+      const response = await axios.post(`${import.meta.env.VITE_WEBHOOK_URL}/api/v1/session/create`, {
         dapp: {
           name: "Sanket's Dapp",
           url: "https://walletbuddy.sanketnighot.com"

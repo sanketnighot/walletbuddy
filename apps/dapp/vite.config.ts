@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'process.env.VITE_WEBHOOK_URL': JSON.stringify(env.VITE_WEBHOOK_URL),
+      'import.meta.env.VITE_WEBHOOK_URL': JSON.stringify(env.VITE_WEBHOOK_URL),
     },
   }
 })
