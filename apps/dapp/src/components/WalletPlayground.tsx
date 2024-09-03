@@ -3,6 +3,11 @@ import { motion } from 'framer-motion';
 import { ConnectedWallet } from './ConnectedWallet';
 import { WalletConnection } from './WalletConnection';
 import { useWalletSession } from '../hooks/useWalletSession';
+import * as web3 from '@solana/web3.js';
+import { Buffer } from 'buffer';
+import axios from 'axios';
+
+window.Buffer = Buffer;
 
 export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('signMessage');
@@ -16,18 +21,64 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
     qrCodeData,
     isLoading,
     error,
+    publicKey,
     handleConnect,
     handleDisconnect,
   } = useWalletSession(isOpen);
 
   const handleSignMessage = () => {
     console.log('Signing message:', message);
-    
   };
 
-  const handleSendSol = () => {
-    console.log('Sending SOL:', amount, 'to', recipient);
-    // Implement actual SOL sending logic here
+  const handleSendSol = async () => {
+    if (!publicKey) {
+      console.error('Public key not available');
+      return;
+    }
+
+    try {
+      const senderPublicKey = new web3.PublicKey(publicKey);
+      const recipientPublicKey = new web3.PublicKey(recipient);
+
+      const transaction = new web3.Transaction().add(
+        web3.SystemProgram.transfer({
+          fromPubkey: senderPublicKey,
+          toPubkey: recipientPublicKey,
+          lamports: web3.LAMPORTS_PER_SOL * parseFloat(amount),
+        })
+      );
+      // Get the latest blockhash
+      const connection = new web3.Connection(web3.clusterApiUrl('devnet'));
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = senderPublicKey;
+
+      // Serialize the transaction
+      const serializedTransaction = transaction.serialize({
+        requireAllSignatures: false,
+        verifySignatures: false
+      });
+
+      // Convert the serialized transaction to base64
+      const base64Transaction = serializedTransaction.toString('base64');
+			const session = await localStorage.getItem("walletSessionData")
+			if (!session) {
+				console.error("No session data found")
+				return
+			}
+			const sessionData = JSON.parse(session)
+
+      console.log('Base64 encoded transaction:', base64Transaction);
+			const response = await axios.post(`${import.meta.env.VITE_WEBHOOK_URL}/api/v1/transaction/sign`, {
+				transaction: base64Transaction,
+				sessionId: sessionData.id
+			})
+			const data = await response.data.json();
+			console.log('Signature:', data.signature);
+
+    } catch (err) {
+      console.error('Error creating transaction:', err);
+    }
   };
 
   const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -55,22 +106,30 @@ export const WalletPlayground: React.FC<{ isOpen: boolean; onClose: () => void }
         </h2>
 
         {isConnected ? (
-          <ConnectedWallet
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            handleDisconnect={() => {
-              handleDisconnect();
-              onClose();
-            }}
-            handleSignMessage={handleSignMessage}
-            handleSendSol={handleSendSol}
-            message={message}
-            setMessage={setMessage}
-            amount={amount}
-            setAmount={setAmount}
-            recipient={recipient}
-            setRecipient={setRecipient}
-          />
+          <>
+            <div className="mb-4 text-center">
+              <p className="text-lg text-text-dark">Connected Public Key:</p>
+              <p className="text-sm text-primary break-all cursor-pointer" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }} onClick={() => navigator.clipboard.writeText(publicKey ?? '')}>
+                {publicKey ?? 'No public key available'}
+              </p>
+            </div>
+            <ConnectedWallet
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              handleDisconnect={() => {
+                handleDisconnect();
+                onClose();
+              }}
+              handleSignMessage={handleSignMessage}
+              handleSendSol={handleSendSol}
+              message={message}
+              setMessage={setMessage}
+              amount={amount}
+              setAmount={setAmount}
+              recipient={recipient}
+              setRecipient={setRecipient}
+            />
+          </>
         ) : (
           <WalletConnection
             isLoading={isLoading}

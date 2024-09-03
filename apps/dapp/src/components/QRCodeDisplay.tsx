@@ -8,7 +8,7 @@ interface QRCodeDisplayProps {
 }
 
 export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ isLoading, error, qrCodeData }) => {
-  if (isLoading) return <p className="text-text-dark">Loading QR code...</p>;
+  if (isLoading) return <p>Loading QR code...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
   return <QRCode value={qrCodeData} size={192} />;
 };

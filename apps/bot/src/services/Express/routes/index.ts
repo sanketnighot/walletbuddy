@@ -1,6 +1,6 @@
 import Router from "express"
 import { testBot } from "../controllers/bot.controller"
-import { acceptWalletSession, createWallet, createWalletSession, getUserSubscriptions, getWallet, getWalletSession, rejectWalletSession, subscribeToSubscription, unsubscribeToSubscription, updateWalletSession } from "../controllers/wallet.controller"
+import { acceptWalletSession, createWallet, createWalletSession, getTransaction, getUserSubscriptions, getWallet, getWalletSession, rejectWalletSession, signTransaction, subscribeToSubscription, unsubscribeToSubscription, updateWalletSession } from "../controllers/wallet.controller"
 
 const router = Router()
 
@@ -20,6 +20,10 @@ router.route("/session/update").post(updateWalletSession)
 router.route("/session").get(getWalletSession)
 router.route("/session/accept").post(acceptWalletSession)
 router.route("/session/reject").post(rejectWalletSession)
+
+// Wallet Transaction routes
+router.route("/transaction/sign").post(signTransaction)
+router.route("/transaction/:transactionId").get(getTransaction)
 
 
 export default router

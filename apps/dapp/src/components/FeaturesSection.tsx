@@ -1,50 +1,29 @@
 import React from 'react';
-import { motion, useInView } from 'framer-motion';
-import { features } from '../data/features';
+import { motion } from 'framer-motion';
 
-const FeatureCard: React.FC<{ title: string; description: string; icon: string; index: number; implemented: boolean }> = ({ title, description, icon, index, implemented }) => {
-  const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.2 });
-
-  return (
-    <motion.div 
-      ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`bg-background-light p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 ${implemented ? 'border-l-4 border-green-500' : 'border-l-4 border-yellow-500'}`}
-    >
-      <div className="text-4xl mb-4 bg-gradient-to-br from-primary to-secondary rounded-full w-16 h-16 flex items-center justify-center text-white">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2 text-primary">{title}</h3>
-      <p className="text-text-dark">{description}</p>
-      <p className={`mt-2 font-semibold ${implemented ? 'text-green-500' : 'text-yellow-500'}`}>
-        {implemented ? 'Implemented' : 'Coming Soon'}
-      </p>
-    </motion.div>
-  );
-};
+const features = [
+  { title: 'Easy Setup', description: 'Connect your wallet in seconds' },
+  { title: 'Secure', description: 'Your keys, your crypto' },
+  { title: 'Analytics', description: 'Track your portfolio performance' },
+];
 
 export const FeaturesSection: React.FC = () => {
-  const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.2 });
-
   return (
-    <section id="features" className="py-20 bg-gradient-to-br from-background to-background-light">
-      <div className="container mx-auto px-4">
-        <motion.h2 
-          ref={ref}
-          initial={{ opacity: 0, y: -50 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-        >
-          Key Features
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <FeatureCard key={index} {...feature} index={index} />
-          ))}
-        </div>
+    <section id="features" className="py-20 px-6 bg-background-light">
+      <h2 className="text-3xl font-bold text-center mb-12">Features</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {features.map((feature, index) => (
+          <motion.div
+            key={feature.title}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: index * 0.2 }}
+            className="bg-background p-6 rounded-lg shadow-lg"
+          >
+            <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+            <p>{feature.description}</p>
+          </motion.div>
+        ))}
       </div>
     </section>
   );

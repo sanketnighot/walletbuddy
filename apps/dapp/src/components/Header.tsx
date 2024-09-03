@@ -17,8 +17,8 @@ export const Header: React.FC = () => {
 					className="flex justify-between items-center"
 				>
 					<div className="flex items-center">
-						<img src={logo} alt="Wallet Buddy Logo" className="h-10 w-10 mr-2" />
-						<div className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden md:block">Wallet Buddy</div>
+						<img src={logo} alt="Wallet Buddy Logo" className="h-8 w-8 mr-2" />
+						<div className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden sm:block">Wallet Buddy</div>
 					</div>
 					<nav className="hidden md:block">
 						{[{'title': 'Features', 'href': '#features'}, {'title': 'Roadmap', 'href': '#roadmap'}, {'title': 'Contact', 'href': '#contact'}].map((item) => (
@@ -27,7 +27,7 @@ export const Header: React.FC = () => {
 							</a>
 						))}
 					</nav>
-					<button onClick={toggleMenu} className="md:hidden text-primary">
+					<button onClick={toggleMenu} className="md:hidden text-primary p-2">
 						<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
 						</svg>

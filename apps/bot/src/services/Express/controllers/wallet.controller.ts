@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
-import { prisma, User, WalletSessionStatus } from "@repo/database"
+import { prisma } from "@repo/database"
 import SendBotResponse from "../../TelegramBot/utils/BotResponse"
+import { Transaction, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js"
 
 export const createWalletSession = async (req: Request, res: Response) => {
   try {
@@ -137,6 +138,102 @@ export const rejectWalletSession = async (req: Request, res: Response) => {
     return res.status(200).json({ status: "success", message: "Wallet rejected" })
   } catch (error: any) {
     res.status(500).json({ status: "failed", error: error.message })
+  }
+}
+
+export const signTransaction = async (req: Request, res: Response) => {
+  try {
+    const { transaction, sessionId } = req.body;
+    console.log('Received base64 encoded transaction:', transaction);
+
+    // Validate sessionId and transaction
+    if (!sessionId || typeof sessionId !== 'string' || !transaction || typeof transaction !== 'string') {
+      return res.status(400).json({ error: 'Invalid or missing sessionId or transaction' });
+    }
+
+    // Deserialize the transaction
+    let deserializedTransaction;
+    try {
+      const transactionBuffer = Buffer.from(transaction, 'base64');
+      deserializedTransaction = Transaction.from(transactionBuffer);
+    } catch (error) {
+      console.error('Error deserializing transaction:', error);
+      return res.status(400).json({ error: 'Invalid transaction format' });
+    }
+
+    // Get the wallet session and associated user
+    const walletSession = await prisma.walletSession.findUnique({
+      where: { id: sessionId },
+      include: { user: true },
+    });
+
+    if (!walletSession || !walletSession.user) {
+      return res.status(404).json({ error: 'Wallet session or user not found' });
+    }
+
+    // Find the transfer instruction
+    const transferInstruction = deserializedTransaction.instructions.find(
+      (ix) => ix.programId.equals(SystemProgram.programId)
+    );
+
+    if (!transferInstruction) {
+      return res.status(400).json({ error: 'No transfer instruction found in transaction' });
+    }
+
+    // Extract amount and recipient from the transfer instruction
+    const amountInLamports = transferInstruction.data.readBigUInt64LE(4);
+    const amountInSOL = Number(amountInLamports) / LAMPORTS_PER_SOL;
+    const formattedAmount = amountInSOL.toFixed(4);
+    const recipient = transferInstruction.keys[1].pubkey.toBase58();
+
+    // Prepare transaction details for the message
+    const transactionDetails = deserializedTransaction.instructions.map((instruction, index) => {
+      return `Instruction ${index + 1}:
+        Program: ${instruction.programId.toBase58()}
+        Accounts: ${instruction.keys.map(key => key.pubkey.toBase58()).join(', ')}
+      `;
+    }).join('\n');
+
+    const message = `
+You have a new transaction to sign:
+
+${transactionDetails}
+
+Amount: ${formattedAmount} SOL
+Recipient: ${recipient}
+
+Do you want to sign this transaction?
+    `;
+
+    // Store the transaction in the database
+    const walletTransaction = await prisma.walletTransaction.create({
+      data: {
+        sessionId: sessionId,
+        txn: {
+          base64: transaction,
+          amount: amountInSOL.toString(),
+          recipient: recipient,
+        },
+        status: 'PENDING',
+      },
+    });
+
+    // Send the message to the user
+    await SendBotResponse(Number(walletSession.user.chatId), message, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "✅ Accept", web_app: { url: `${process.env.WEBAPP_URL}/sign?transactionId=${walletTransaction.id}`} },
+            { text: "❌ Reject", callback_data: `sign_transaction_reject/${walletTransaction.id}` }
+          ],
+        ],
+      },
+    });
+
+    res.status(200).json({ status: "success", message: "Transaction sent for user approval", transactionId: walletTransaction.id });
+  } catch (error: any) {
+    console.error('Error in signTransaction:', error);
+    res.status(500).json({ error: error.message });
   }
 }
 
@@ -308,5 +405,42 @@ export const unsubscribeToSubscription = async (req: Request, res: Response) => 
     )));
   } catch (error: any) {
     res.status(500).json({ error: error.message })
+  }
+}
+
+export const getTransaction = async (req: Request, res: Response) => {
+  try {
+    const { transactionId } = req.params;
+
+    if (!transactionId) {
+      return res.status(400).json({ error: 'Missing transaction ID' });
+    }
+
+    const transaction = await prisma.walletTransaction.findUnique({
+      where: { id: transactionId },
+      include: {
+        session: {
+          include: {
+            user: {
+              select: {
+                walletInfo: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    // Extract relevant information
+    const response = { transaction};
+
+    res.status(200).json(response);
+  } catch (error: any) {
+    console.error('Error in getTransaction:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
