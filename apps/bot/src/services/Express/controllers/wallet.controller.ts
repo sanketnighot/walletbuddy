@@ -110,11 +110,12 @@ export const acceptWalletSession = async (req: Request, res: Response) => {
 
     let message = ""
     if (walletSession) {
-      message += `Wallet connected to <b><u>${dapp?.name ?? "this dapp"}</u></b>?\n\n`
+      message += `Wallet connected to <b><u>${dapp?.name ?? "this dapp"}</u></b>\n\n`
       message += `<i>${dapp?.description ?? ""}</i>\n`
       message += `${dapp?.url ?? ""}`
     }
-    await SendBotResponse(Number(walletSession.user?.id), message)
+    console.log("walletSession", walletSession)
+    await SendBotResponse(Number(walletSession.user?.chatId), message)
     return res.status(200).json({ status: "success", message: "Wallet connected" })
   } catch (error: any) {
     res.status(500).json({ status: "failed", error: error.message })
@@ -130,6 +131,9 @@ export const rejectWalletSession = async (req: Request, res: Response) => {
         status: "REJECTED",
       },
     })
+    if (!walletSession) {
+      return res.status(404).json({ error: 'Wallet session not found' })
+    }
     return res.status(200).json({ status: "success", message: "Wallet rejected" })
   } catch (error: any) {
     res.status(500).json({ status: "failed", error: error.message })

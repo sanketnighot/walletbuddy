@@ -22,7 +22,7 @@ type sessionDataType = {
 
 export default function ScanPage() {
   const [isLoading, setIsLoading] = useState(true)
-  const [pending, setPending] = useState(false)
+  const [pending, setPending] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [scanData, setScanData] = useState<string | null>(null)
   const [sessionData, setSessionData] = useState<sessionDataType | null>(null)
@@ -43,7 +43,7 @@ export default function ScanPage() {
   }
 
   const handleAccept = async () => {
-    setPending(true)
+    setPending(1)
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/session/accept`,
       {
@@ -51,7 +51,20 @@ export default function ScanPage() {
         chatId: userData?.id,
       }
     )
-    setPending(false)
+    setPending(0)
+    window.Telegram?.WebApp.close()
+  }
+
+  const handleReject = async () => {
+    setPending(2)
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_WEBHOOK_URL}/api/v1/session/reject`,
+      {
+        sessionId: sessionData?.id,
+      }
+    )
+    setPending(0)
+    window.Telegram?.WebApp.close()
   }
 
   const handleScan = () => {
@@ -130,19 +143,17 @@ export default function ScanPage() {
               <div className="flex space-x-4 w-full">
                 <button
                   className="flex-1 bg-green-500 text-tg-button-text py-2 px-4 rounded-md hover:opacity-90 transition-opacity"
-                  onClick={() => {
-                    /* Handle accept */
-                  }}
+                  onClick={handleAccept}
+                  disabled={pending === 1}
                 >
-                  Accept
+                  {pending === 1 ? "Accepting..." : "Accept"}
                 </button>
                 <button
                   className="flex-1 bg-red-500 text-tg-button-text py-2 px-4 rounded-md hover:opacity-90 transition-opacity"
-                  onClick={() => {
-                    /* Handle reject */
-                  }}
+                  onClick={handleReject}
+                  disabled={pending === 2}
                 >
-                  Reject
+                  {pending === 2 ? "Rejecting..." : "Reject"}
                 </button>
               </div>
             </div>
