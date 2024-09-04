@@ -14,7 +14,7 @@ export const HeroSection: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1, delay: 0.2 }}
-      className="flex flex-col w-full justify-center items-center min-h-screen text-center relative overflow-hidden bg-gradient-to-br from-background to-background-light pt-20"
+      className="flex flex-col w-full justify-center items-center min-h-screen text-center relative overflow-hidden bg-gradient-to-br from-background to-background-light"
     >
       {/* Background animation */}
       <div className="absolute inset-0 z-0">
@@ -81,19 +81,21 @@ export const HeroSection: React.FC = () => {
           >
             Try the Bot
           </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-300"
-          >
-            Learn More
-          </motion.button>
+          <a href="https://t.me/Wallet_Buddy_Bot" target="_blank">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-300"
+            >
+              Open Bot
+            </motion.button>
+          </a>
         </motion.div>
       </div>
 
       {/* Floating features */}
       <div className="absolute bottom-10 left-0 right-0 flex justify-center space-x-8">
-        {['Multi-Chain', 'Secure', 'User-Friendly'].map((feature, index) => (
+        {['Solana Wallet', 'Telegram Bot', 'Web3 Activities'].map((feature, index) => (
           <motion.div
             key={feature}
             className="bg-background-light bg-opacity-80 rounded-lg p-4 shadow-lg"

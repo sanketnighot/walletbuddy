@@ -39,11 +39,11 @@ export const roadmapItems = [
     description: "Continuous improvements and new feature additions",
     status: "Planned",
     details: [
+      "Natural Language Interaction",
       "Multi-chain support",
       "Advanced DeFi integrations",
       "AI-powered insights",
       "Enhanced security features",
-      "Mobile app development"
     ]
   },
 ];
