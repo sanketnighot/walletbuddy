@@ -16,10 +16,10 @@ export const ContactSection: React.FC = () => {
     >
       <h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Join Our Community</h2>
       <p className="text-xl text-text-dark mb-4">Have questions or want to contribute? Check out our GitHub or contact us!</p>
-      <a href="https://github.com/sanketnighot/walletbuddy" className="text-primary hover:text-primary-light transition-colors duration-300 block mb-2">
+      <a href="https://github.com/sanketnighot/walletbuddy" target="_blank" className="text-primary hover:text-primary-light transition-colors duration-300 block mb-2">
         GitHub: Wallet Buddy
       </a>
-      <a href="mailto:sanketnighot25@gmail.com" className="text-primary hover:text-primary-light transition-colors duration-300">
+      <a href="mailto:sanketnighot25@gmail.com" target="_blank" className="text-primary hover:text-primary-light transition-colors duration-300">
         sanketnighot25@gmail.com
       </a>
     </motion.section>
